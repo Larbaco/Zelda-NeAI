@@ -35,7 +35,7 @@ def gera_colisoes():
 
 def getColisao(pos_x_personagem, pos_y_personagem, room_x, room_y, colisionmap):
     coluna = (pos_y_personagem / 16)
-    linha = (11 - (pos_x_personagem / 11))
+    linha = (14 - (pos_x_personagem / 11))
     linha = int(linha)
     coluna = int(coluna)
     print(linha, coluna, room_x, room_y)

@@ -70,29 +70,28 @@ class Zenai(arcade.Window):
                 if colisao:
                     pass
                 self.pos_y_personagem -= 2;
-            else:
+            elif self.y > 0:
                 self.pos_y_personagem = 249
                 self.y -= 1;
                 pass
         elif self.right:
             if self.pos_y_personagem < 250:
                 self.pos_y_personagem += 2;
-            else:
+            elif self.y < 254:
                 self.pos_y_personagem = 0
                 self.y += 1
                 pass
         elif self.down:
             if self.pos_x_personagem > 0:
                 self.pos_x_personagem -= 2;
-
-            else:
+            elif self.x < 7:
                 self.pos_x_personagem = 165
                 self.x += 1
                 pass
         elif self.up:
             if self.pos_x_personagem < 170:
                 self.pos_x_personagem += 2;
-            else:
+            elif self.x > 0:
                 self.pos_x_personagem = 0
                 self.x -= 1
                 pass
