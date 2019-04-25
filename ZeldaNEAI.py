@@ -6,7 +6,7 @@ from core import *
 
 
 def main():
-    game = Zenai()
+    game = Zenai("ZENAI")
     game.setup()
     arcade.run()
 
