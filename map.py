@@ -32,7 +32,7 @@ def gera_colisoes():
     return mapa_colisoes
 
 
-def getColisao(player_x, player_y, room_x, room_y, colisionmap):
+def _tile_colide(player_x, player_y, room_x, room_y, colisionmap):
     coluna = (16 * room_y) + int(player_x / 16)
     linha = (11 * room_x) + int((14 - (player_y / 13)) - 1)
 
@@ -47,3 +47,22 @@ def getColisao(player_x, player_y, room_x, room_y, colisionmap):
         return 1
     else:
         return 0
+
+
+def getColisao(player_x, player_y, room_x, room_y, colisionmap):
+    return _tile_colide(player_x, player_y, room_x, room_y, colisionmap)
+
+
+def getColisaoBox(player_x, player_y, room_x, room_y, colisionmap, half_w, half_h):
+    """Colisao por bounding box: checa os 4 cantos do retangulo do sprite.
+    player_x/player_y = centro em tiles; half_w/half_h = meia-largura/altura em tiles."""
+    corners = [
+        (player_x - half_w, player_y - half_h),
+        (player_x + half_w, player_y - half_h),
+        (player_x - half_w, player_y + half_h),
+        (player_x + half_w, player_y + half_h),
+    ]
+    for cx, cy in corners:
+        if _tile_colide(cx, cy, room_x, room_y, colisionmap):
+            return 1
+    return 0

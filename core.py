@@ -97,11 +97,14 @@ class Zenai(arcade.Window):
 
         # 2) Colisao com parede interna (fora das bordas de transicao)
         elif abs(self.player.change_x) + abs(self.player.change_y) > 0:
-            # Checa a posicao ALVO (atual + velocidade): permite sair da parede
+            # Checa a posicao ALVO (atual + velocidade) com bounding box do sprite
             target_x = self.player.center_x + self.player.change_x
             target_y = self.player.center_y + self.player.change_y
-            collision = getColisao(target_x / scale, target_y / scale, self.x, self.y,
-                                   self.colisionmap)
+            # Hitbox menor que o sprite (fator 0.5): evita grudar em corredores
+            half_w = ((self.player.width / 2) / scale) * 0.5
+            half_h = ((self.player.height / 2) / scale) * 0.5
+            collision = getColisaoBox(target_x / scale, target_y / scale, self.x, self.y,
+                                      self.colisionmap, half_w, half_h)
             if collision:
                 # Parede interna: para o jogador (nao atravessa, nao quica)
                 self.player.change_x = 0
@@ -157,7 +160,7 @@ class Link(arcade.Sprite):
         global scale
         # Call the parent Sprite constructor
         super().__init__()
-        self.scale = scale
+        self.scale = scale / 2
 
         texture = arcade.load_texture("sprites/link_esquerda.png")
         self.textures.append(texture)
