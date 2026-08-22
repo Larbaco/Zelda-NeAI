@@ -97,7 +97,10 @@ class Zenai(arcade.Window):
 
         # 2) Colisao com parede interna (fora das bordas de transicao)
         elif abs(self.player.change_x) + abs(self.player.change_y) > 0:
-            collision = getColisao(self.player.center_x / scale, self.player.center_y / scale, self.x, self.y,
+            # Checa a posicao ALVO (atual + velocidade): permite sair da parede
+            target_x = self.player.center_x + self.player.change_x
+            target_y = self.player.center_y + self.player.change_y
+            collision = getColisao(target_x / scale, target_y / scale, self.x, self.y,
                                    self.colisionmap)
             if collision:
                 # Parede interna: para o jogador (nao atravessa, nao quica)
