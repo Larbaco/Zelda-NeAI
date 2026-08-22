@@ -39,6 +39,7 @@ class Zenai(arcade.Window):
         self.up = 0
         self.left = 0
         self.right = 0
+        self.keys_held = set()
         self.room = gera_room(world, (self.x, self.y), scale)
 
     def setup(self):
@@ -65,6 +66,8 @@ class Zenai(arcade.Window):
     def on_update(self, delta_time):
         """ All the logic to move, and the game logic goes here. """
         global MUDATELA
+        # Recalcula a velocidade a partir das teclas pressionadas (nao some o input)
+        self._apply_keys()
 
         # 1) Transicao de sala: jogador alcancou uma borda da janela
         if self.player.center_x >= res_X - MOVEMENT_SPEED:
@@ -96,20 +99,23 @@ class Zenai(arcade.Window):
             else:
                 self.player.center_y = self.player.center_y + MOVEMENT_SPEED
 
-        # 2) Colisao com parede interna (fora das bordas de transicao)
+        # 2) Colisao com parede interna (fora das bordas de transicao), por eixo separado
         elif abs(self.player.change_x) + abs(self.player.change_y) > 0:
-            # Checa a posicao ALVO (atual + velocidade) com bounding box do sprite
-            target_x = self.player.center_x + self.player.change_x
-            target_y = self.player.center_y + self.player.change_y
             # Hitbox menor que o sprite (fator 0.5): evita grudar em corredores
             half_w = ((self.player.width / 2) / scale) * 0.5
             half_h = ((self.player.height / 2) / scale) * 0.5
-            collision = getColisaoBox(target_x / scale, target_y / scale, self.x, self.y,
-                                      self.colisionmap, half_w, half_h)
-            if collision:
-                # Parede interna: para o jogador (nao atravessa, nao quica)
-                self.player.change_x = 0
-                self.player.change_y = 0
+            # Eixo X: bloqueia so o movimento horizontal se colidir
+            if self.player.change_x != 0:
+                target_x = self.player.center_x + self.player.change_x
+                if getColisaoBox(target_x / scale, self.player.center_y / scale, self.x, self.y,
+                                 self.colisionmap, half_w, half_h):
+                    self.player.change_x = 0
+            # Eixo Y: bloqueia so o movimento vertical se colidir
+            if self.player.change_y != 0:
+                target_y = self.player.center_y + self.player.change_y
+                if getColisaoBox(self.player.center_x / scale, target_y / scale, self.x, self.y,
+                                 self.colisionmap, half_w, half_h):
+                    self.player.change_y = 0
 
         if MUDATELA:
             # print(self.x, self.y)
@@ -122,13 +128,13 @@ class Zenai(arcade.Window):
         """ Called whenever the user presses a key. """
         global MOVEMENT_SPEED
         if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player.change_x = -MOVEMENT_SPEED
+            self.keys_held.add(arcade.key.LEFT)
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player.change_x = MOVEMENT_SPEED
+            self.keys_held.add(arcade.key.RIGHT)
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player.change_y = -MOVEMENT_SPEED
+            self.keys_held.add(arcade.key.DOWN)
         elif key == arcade.key.UP or key == arcade.key.W:
-            self.player.change_y = MOVEMENT_SPEED
+            self.keys_held.add(arcade.key.UP)
         elif key == arcade.key.ESCAPE:
             exit(1)
         elif key == arcade.key.PLUS:
@@ -144,13 +150,33 @@ class Zenai(arcade.Window):
         elif key == arcade.key.NUM_DIVIDE:
             print(MOVEMENT_SPEED)
             MOVEMENT_SPEED /= 2
+        self._apply_keys()
 
     def on_key_release(self, key, modifiers):
         """ Called whenever the user presses a key. """
-        if key == arcade.key.UP or key == arcade.key.DOWN or key == arcade.key.W or key == arcade.key.S:
-            self.player.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.A or key == arcade.key.D:
-            self.player.change_x = 0
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.keys_held.discard(arcade.key.LEFT)
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.keys_held.discard(arcade.key.RIGHT)
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            self.keys_held.discard(arcade.key.DOWN)
+        elif key == arcade.key.UP or key == arcade.key.W:
+            self.keys_held.discard(arcade.key.UP)
+        self._apply_keys()
+
+
+    def _apply_keys(self):
+        """ Recalcula change_x/change_y a partir das teclas pressionadas. """
+        self.player.change_x = 0
+        self.player.change_y = 0
+        if arcade.key.LEFT in self.keys_held:
+            self.player.change_x = -MOVEMENT_SPEED
+        if arcade.key.RIGHT in self.keys_held:
+            self.player.change_x = MOVEMENT_SPEED
+        if arcade.key.DOWN in self.keys_held:
+            self.player.change_y = -MOVEMENT_SPEED
+        if arcade.key.UP in self.keys_held:
+            self.player.change_y = MOVEMENT_SPEED
 
 
 class Link(arcade.Sprite):
