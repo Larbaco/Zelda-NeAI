@@ -63,53 +63,47 @@ class Zenai(arcade.Window):
 
     def on_update(self, delta_time):
         """ All the logic to move, and the game logic goes here. """
-        collision = 0
         global MUDATELA
-        if abs(self.player.change_x) + abs(self.player.change_y) > 0:
+
+        # 1) Transicao de sala: jogador alcancou uma borda da janela
+        if self.player.center_x >= res_X - MOVEMENT_SPEED:
+            if self.y < 15:
+                self.player.center_x = 0 + MOVEMENT_SPEED
+                self.y += 1
+                MUDATELA = 1
+            else:
+                self.player.center_x = self.player.center_x - MOVEMENT_SPEED
+        elif self.player.center_x <= MOVEMENT_SPEED:
+            if self.y > 0:
+                self.player.center_x = res_X - MOVEMENT_SPEED
+                self.y -= 1
+                MUDATELA = 1
+            else:
+                self.player.center_x = self.player.center_x + MOVEMENT_SPEED
+        elif self.player.center_y >= res_Y - MOVEMENT_SPEED:
+            if self.x > 0:
+                self.player.center_y = MOVEMENT_SPEED
+                self.x -= 1
+                MUDATELA = 1
+            else:
+                self.player.center_y = self.player.center_y - MOVEMENT_SPEED
+        elif self.player.center_y <= MOVEMENT_SPEED:
+            if self.x < 7:
+                self.player.center_y = res_Y - MOVEMENT_SPEED
+                self.x += 1
+                MUDATELA = 1
+            else:
+                self.player.center_y = self.player.center_y + MOVEMENT_SPEED
+
+        # 2) Colisao com parede interna (fora das bordas de transicao)
+        elif abs(self.player.change_x) + abs(self.player.change_y) > 0:
             collision = getColisao(self.player.center_x / scale, self.player.center_y / scale, self.x, self.y,
                                    self.colisionmap)
-        if collision:
-            if self.player.center_x >= (253 * scale) + MOVEMENT_SPEED:
-                if self.y < 15:
-                    self.player.center_x = 0 + MOVEMENT_SPEED
-                    self.y += 1
-                    MUDATELA = 1
-                else:
-                    self.player.change_x = 0
-                    self.player.change_y = 0
-                    self.player.center_x = self.player.center_x - MOVEMENT_SPEED
-            elif self.player.center_x < 0 - MOVEMENT_SPEED:
-                if self.y > 0:
-                    self.player.center_x = (250 * scale) - MOVEMENT_SPEED
-                    self.y -= 1
-                    MUDATELA = 1
-                else:
-                    self.player.change_x = 0
-                    self.player.change_y = 0
-                    self.player.center_x = self.player.center_x + MOVEMENT_SPEED
-            elif self.player.center_y >= (165 * scale) + MOVEMENT_SPEED:
-                if self.x > 0:
-                    self.player.center_y = (25 * scale + MOVEMENT_SPEED)
-                    self.x -= 1
-                    MUDATELA = 1
-                else:
-                    self.player.change_x = 0
-                    self.player.change_y = 0
-                    self.player.center_y = self.player.center_y - MOVEMENT_SPEED
-            elif self.player.center_y < 25 - MOVEMENT_SPEED:
-                if self.x < 7:
-                    self.player.center_y = (167 * scale - MOVEMENT_SPEED)
-                    self.x += 1
-                    MUDATELA = 1
-                else:
-                    self.player.change_x = 0
-                    self.player.change_y = 0
-                    self.player.center_y = self.player.center_y + MOVEMENT_SPEED
+            if collision:
+                # Parede interna: para o jogador (nao atravessa, nao quica)
+                self.player.change_x = 0
+                self.player.change_y = 0
 
-        elif not MUDATELA:
-            self.player.change_y *= (-1)
-            self.player.change_x *= (-1)
-            # MUDATELA = 0
         if MUDATELA:
             # print(self.x, self.y)
             self.room = gera_room(world, (self.x, self.y), scale)

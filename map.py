@@ -33,16 +33,17 @@ def gera_colisoes():
 
 
 def getColisao(player_x, player_y, room_x, room_y, colisionmap):
-    if player_y < 15 or player_y > 164:
-        return 1
-    if player_x < 10 or player_x > 250:
-        return 1
     coluna = (16 * room_y) + int(player_x / 16)
     linha = (11 * room_x) + int((14 - (player_y / 13)) - 1)
 
-    print(player_x, player_y, linha, coluna, room_x, room_y)
-    print(colisionmap[linha][0][coluna])
-    if colisionmap[linha][0][coluna] == 'X':
+    # Fora dos limites do mapa: sem colisao (permite transicao de sala)
+    if linha < 0 or linha >= len(colisionmap):
         return 0
-    else:
+    if coluna < 0 or coluna >= len(colisionmap[linha][0]):
+        return 0
+
+    # 'X' = parede (colide), '.' = aberto (passa)
+    if colisionmap[linha][0][coluna] == 'X':
         return 1
+    else:
+        return 0
