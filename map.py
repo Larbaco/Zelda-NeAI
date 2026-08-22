@@ -17,7 +17,8 @@ def gera_room(world_map, pos, scale):
             tile_linha = (pos[0] * 11) + linha
             tile_coluna = (pos[1] * 16) + coluna
             tile = arcade.Sprite('sprites/' + world_map[tile_linha][tile_coluna] + '.png', scale*1.05)
-            tile.set_position((scale * ((coluna * 16) + 8)), (scale * (176 - (linha * 16) - 8)))
+            tile.center_x = scale * ((coluna * 16) + 8)
+            tile.center_y = scale * (176 - (linha * 16) - 8)
             sprite_tiles.append(tile)
     return sprite_tiles
 

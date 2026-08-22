@@ -28,6 +28,8 @@ class Zenai(arcade.Window):
         global world
         world = create_map()
         self.player = Link()
+        self.player_list = arcade.SpriteList()
+        self.player_list.append(self.player)
         self.last_time = None
         self.frame_count = 0
         self.fps_message = None
@@ -44,60 +46,65 @@ class Zenai(arcade.Window):
 
         # self.score = 0
 
-        self.player.set_position(123 * scale, 95 * scale)
+        self.player.center_x = 123 * scale
+        self.player.center_y = 95 * scale
         self.colisionmap = gera_colisoes()
 
     def on_draw(self):
         """ Draw everything """
-        arcade.start_render()
+        self.clear()
         # map.draw_room(world, (self.x, self.y))
 
         if self.last_time and self.frame_count % 60 == 0:
             fps = 1.0 / (time.time() - self.last_time) * 60
             self.fps_message = f"FPS: {fps:5.0f}"
         self.room.draw()
-        self.player.draw()
+        self.player_list.draw()
 
-    def update(self, delta_time):
+    def on_update(self, delta_time):
         """ All the logic to move, and the game logic goes here. """
         collision = 0
         global MUDATELA
-        if abs(self.player.velocity[0]) + abs(self.player.velocity[1]) > 0:
+        if abs(self.player.change_x) + abs(self.player.change_y) > 0:
             collision = getColisao(self.player.center_x / scale, self.player.center_y / scale, self.x, self.y,
                                    self.colisionmap)
         if collision:
             if self.player.center_x >= (253 * scale) + MOVEMENT_SPEED:
                 if self.y < 15:
-                    self.player.set_position(0 + MOVEMENT_SPEED, self.player.center_y)
+                    self.player.center_x = 0 + MOVEMENT_SPEED
                     self.y += 1
                     MUDATELA = 1
                 else:
-                    self.player.velocity = [0, 0]
-                    self.player.set_position(self.player.center_x - MOVEMENT_SPEED, self.player.center_y)
+                    self.player.change_x = 0
+                    self.player.change_y = 0
+                    self.player.center_x = self.player.center_x - MOVEMENT_SPEED
             elif self.player.center_x < 0 - MOVEMENT_SPEED:
                 if self.y > 0:
-                    self.player.set_position((250 * scale) - MOVEMENT_SPEED, self.player.center_y)
+                    self.player.center_x = (250 * scale) - MOVEMENT_SPEED
                     self.y -= 1
                     MUDATELA = 1
                 else:
-                    self.player.velocity = [0, 0]
-                    self.player.set_position(self.player.center_x + MOVEMENT_SPEED, self.player.center_y)
+                    self.player.change_x = 0
+                    self.player.change_y = 0
+                    self.player.center_x = self.player.center_x + MOVEMENT_SPEED
             elif self.player.center_y >= (165 * scale) + MOVEMENT_SPEED:
                 if self.x > 0:
-                    self.player.set_position(self.player.center_x, (25 * scale) + MOVEMENT_SPEED)
+                    self.player.center_y = (25 * scale + MOVEMENT_SPEED)
                     self.x -= 1
                     MUDATELA = 1
                 else:
-                    self.player.velocity = [0, 0]
-                    self.player.set_position(self.player.center_x, self.player.center_y - MOVEMENT_SPEED)
+                    self.player.change_x = 0
+                    self.player.change_y = 0
+                    self.player.center_y = self.player.center_y - MOVEMENT_SPEED
             elif self.player.center_y < 25 - MOVEMENT_SPEED:
                 if self.x < 7:
-                    self.player.set_position(self.player.center_x, (167 * scale) - MOVEMENT_SPEED)
+                    self.player.center_y = (167 * scale - MOVEMENT_SPEED)
                     self.x += 1
                     MUDATELA = 1
                 else:
-                    self.player.velocity = [0, 0]
-                    self.player.set_position(self.player.center_x, self.player.center_y + MOVEMENT_SPEED)
+                    self.player.change_x = 0
+                    self.player.change_y = 0
+                    self.player.center_y = self.player.center_y + MOVEMENT_SPEED
 
         elif not MUDATELA:
             self.player.change_y *= (-1)
@@ -113,13 +120,13 @@ class Zenai(arcade.Window):
     def on_key_press(self, key, modifiers):
         """ Called whenever the user presses a key. """
         global MOVEMENT_SPEED
-        if key == arcade.key.LEFT:
+        if key == arcade.key.LEFT or key == arcade.key.A:
             self.player.change_x = -MOVEMENT_SPEED
-        elif key == arcade.key.RIGHT:
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.player.change_x = MOVEMENT_SPEED
-        elif key == arcade.key.DOWN:
+        elif key == arcade.key.DOWN or key == arcade.key.S:
             self.player.change_y = -MOVEMENT_SPEED
-        elif key == arcade.key.UP:
+        elif key == arcade.key.UP or key == arcade.key.W:
             self.player.change_y = MOVEMENT_SPEED
         elif key == arcade.key.ESCAPE:
             exit(1)
@@ -139,9 +146,9 @@ class Zenai(arcade.Window):
 
     def on_key_release(self, key, modifiers):
         """ Called whenever the user presses a key. """
-        if key == arcade.key.UP or key == arcade.key.DOWN:
+        if key == arcade.key.UP or key == arcade.key.DOWN or key == arcade.key.W or key == arcade.key.S:
             self.player.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
+        elif key == arcade.key.LEFT or key == arcade.key.RIGHT or key == arcade.key.A or key == arcade.key.D:
             self.player.change_x = 0
 
 
@@ -153,14 +160,15 @@ class Link(arcade.Sprite):
         global scale
         # Call the parent Sprite constructor
         super().__init__()
+        self.scale = scale
 
-        texture = arcade.load_texture("sprites/link_esquerda.png", scale=scale)
+        texture = arcade.load_texture("sprites/link_esquerda.png")
         self.textures.append(texture)
-        texture = arcade.load_texture("sprites/link_direita.png", scale=scale)
+        texture = arcade.load_texture("sprites/link_direita.png")
         self.textures.append(texture)
-        texture = arcade.load_texture("sprites/link_cima.png", scale=scale)
+        texture = arcade.load_texture("sprites/link_cima.png")
         self.textures.append(texture)
-        texture = arcade.load_texture("sprites/link_baixo.png", scale=scale)
+        texture = arcade.load_texture("sprites/link_baixo.png")
         self.textures.append(texture)
 
         self.set_texture(TEXTURE_LEFT)
