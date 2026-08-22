@@ -34,7 +34,8 @@ def gera_colisoes():
 
 def _tile_colide(player_x, player_y, room_x, room_y, colisionmap):
     coluna = (16 * room_y) + int(player_x / 16)
-    linha = (11 * room_x) + int((14 - (player_y / 13)) - 1)
+    # Tile tem 16 unidades de altura; centro do tile L fica em py = 176 - L*16 - 8.
+    linha = (11 * room_x) + int((176 - player_y) / 16)
 
     # Fora dos limites do mapa: sem colisao (permite transicao de sala)
     if linha < 0 or linha >= len(colisionmap):

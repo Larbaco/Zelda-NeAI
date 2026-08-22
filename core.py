@@ -46,8 +46,9 @@ class Zenai(arcade.Window):
 
         # self.score = 0
 
-        self.player.center_x = 123 * scale
-        self.player.center_y = 95 * scale
+        # Spawn em area aberta (centro da sala 0,0), longe das paredes
+        self.player.center_x = 180 * scale
+        self.player.center_y = 92 * scale
         self.colisionmap = gera_colisoes()
 
     def on_draw(self):
